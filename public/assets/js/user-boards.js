@@ -36,7 +36,7 @@ function renderBoards(boards) {
 
   let $boardTiles = boards.map(function(board){
     let $boardTile = $('<a class="board-tile">')
-    .attr('href', 'boards/${board.id}')
+    .attr(`href`, `boards/${board.id}`)
     .text(board.name);
 
     return $boardTile;
