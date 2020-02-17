@@ -76,29 +76,29 @@ function handleLoginResponse(data, status, jqXHR) {
 
 function authenticateUser(email, password) {
   $.ajax({
-    url: '/' + authSetting,
-    data: {
-      user: {
-        email,
-        password
+      url: '/' + authSetting,
+      data: {
+        user: {
+          email,
+          password
+        }
+      },
+      method: 'POST'
+    })
+    .then(function (data, status, jqXHR) {
+      if (authSetting === 'signup') {
+        handleSignupResponse(status);
+      } else {
+        handleLoginResponse(data, status, jqXHR);
       }
-    },
-    method: 'POST'
-  })
-  .then(function (data, status, jqXHR) {
-    if (authSetting === 'signup') {
-      handleSignupResponse(status);
-    } else {
-      handleLoginResponse(data, status, jqXHR);
-    }
-  })
-  .catch(function (err) {
-    if (authSetting === 'signup') {
-      handleSignupResponse(err.statusText);
-    } else {
-      handleLoginResponse(err.statusText);
-    }
-  });
+    })
+    .catch(function (err) {
+      if (authSetting === 'signup') {
+        handleSignupResponse(err.statusText);
+      } else {
+        handleLoginResponse(err.statusText);
+      }
+    });
 }
 
 $setLogin.on('click', setAuth.bind(null, 'login'));

@@ -26,7 +26,7 @@ function getUserBoards() {
   $.ajax({
     url: `/api/users/${user.id}`,
     method: 'GET'
-  }).then(function(data) {
+  }).then(function (data) {
     renderBoards(data.boards)
   });
 }
@@ -34,10 +34,10 @@ function getUserBoards() {
 function renderBoards(boards) {
   $boardsContainer.empty();
 
-  let $boardTiles = boards.map(function(board){
+  let $boardTiles = boards.map(function (board) {
     let $boardTile = $('<a class="board-tile">')
-    .attr(`href`, `boards/${board.id}`)
-    .text(board.name);
+      .attr(`href`, `/boards/${board.id}`)
+      .text(board.name);
 
     return $boardTile;
   });
@@ -53,23 +53,23 @@ function handleBoardCreate(event) {
     return;
   }
 
-$.ajax({
-  url: '/api/boards',
-  data: {
-    name: boardName
-  },
-  method: 'POST'
-}).then(function(data) {
-  getUserBoards();
-  MicroModal.close('create-board');
-});
+  $.ajax({
+    url: '/api/boards',
+    data: {
+      name: boardName
+    },
+    method: 'POST'
+  }).then(function (data) {
+    getUserBoards();
+    MicroModal.close('create-board');
+  });
 }
 
-function handleLogout () {
+function handleLogout() {
   $.ajax({
     url: '/logout',
     method: 'DELETE'
-  }).then(function() {
+  }).then(function () {
     localStorage.clear();
     location.replace('/');
   });
