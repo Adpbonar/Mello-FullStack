@@ -66,7 +66,7 @@ function createCards(cards) {
 
 function createLists(lists) {
   let $listContainers = lists.map(function (list) {
-    let $listContainer = $('<div class="list">').data('id', list.id);
+    let $listContainer = $('<div class="list">').data(list);
     let $header = $('<header>');
     let $headerButton = $('<button>')
       .text(list.title)
@@ -104,6 +104,42 @@ function renderBoard() {
 
   $boardContainer.empty();
   $boardContainer.append($lists);
+
+  makeSortable();
+}
+
+function makeSortable() {
+  Sortable.create($boardContainer[0], {
+    animation: 1000,
+    ghostClass: 'ghost',
+    filter: '.add',
+    easing: 'cubic-bezier(0.785, 0.135, 0.15, 0.86)',
+    onMove: function (event) {
+      let shouldMove = !$(event.related).hasClass('add');
+      return shouldMove;
+    },
+    onEnd: function (event) {
+      let {
+        id,
+        position
+      } = $(event.item).data();
+      let newPosition = event.newIndex + 1;
+      if (position === newPosition) {
+        return;
+      }
+
+      $.ajax({
+        url: `/api/lists/${id}`,
+        data: {
+          position: newPosition
+        },
+        method: 'PUT'
+      }).then(function () {
+        init();
+      });
+
+    }
+  });
 }
 
 function openListCreateModal() {
@@ -224,7 +260,10 @@ function openCardEditModal(event) {
 
 function handleCardSave(event) {
   event.preventDefault();
-  let { text, id } = $(event.target).data();
+  let {
+    text,
+    id
+  } = $(event.target).data();
   let newText = $editCardInput.val().trim();
   if (!newText || newText === text) {
     MicroModal.close('edit-card');
@@ -237,7 +276,7 @@ function handleCardSave(event) {
     data: {
       text: newText
     }
-  }).then(function() {
+  }).then(function () {
     init();
     MicroModal.close('edit-card');
   });
@@ -245,11 +284,13 @@ function handleCardSave(event) {
 
 function handleCardDelete(event) {
   event.preventDefault();
-  let { id } = $(event.target).data();
+  let {
+    id
+  } = $(event.target).data();
   $.ajax({
     url: `/api/cards/${id}`,
     method: 'DELETE'
-  }).then(function() {
+  }).then(function () {
     init();
     MicroModal.close('edit-card');
   });
