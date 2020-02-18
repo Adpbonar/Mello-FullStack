@@ -32,7 +32,7 @@ function setAuth(setting) {
 function handleFormSubmit(event) {
   event.preventDefault();
 
-  let email = $emailInput.val().trim();
+  let email = $emailInput.val().trim().toLowerCase();
   let password = $passwordInput.val().trim();
 
   if (!email || !password) {

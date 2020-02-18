@@ -30,12 +30,15 @@ function getBoard(id) {
   $.ajax({
       url: `/api/boards/${id}`,
       method: 'GET'
-    }).then(function (data) {
+    })
+    .then(function (data) {
       board = data;
-      renderBoard()
+      renderBoard();
     })
     .catch(function (err) {
-      location.replace('/boards');
+      if (err.statusText === 'Unauthorized') {
+        location.replace('/boards');
+      }
     });
 }
 
@@ -115,11 +118,18 @@ function renderBoard() {
 }
 
 function rederContributors() {
-  if (board.users.length === 1) {
+  if (board.users.length <= 1) {
     $('h3').html('You don\'t have any contributors yet...');
   } else {
+    $('h3').html('Contributors');
+    $('ul').show();
     let $contributorListItems = board.users.map(function (user) {
-      let $contributorListItem = $('<li>').text(user.email);
+      let $contributorListItem = $('<li>');
+      let $contributorSpan = $('<span>').text(user.email);
+      let $contributorDeleteButton = $('<button class="danger">Remove</button>')
+        .data(user)
+        .on('click', handleContributorDelete);
+      $contributorListItem.append($contributorSpan, $contributorDeleteButton)
       return $contributorListItem;
     });
 
@@ -361,7 +371,7 @@ function handleContributorSave(event) {
 
   let contributorEmail = $contributorModalInput.val().trim();
 
-  $contributorModalInput.val('');
+  $contributorModalInput.val('').toLowerCase();
 
   if (!emailRegex.test(contributorEmail)) {
     $('#contribute .message').text(
@@ -411,6 +421,27 @@ function displayMessage(msg, type = 'hidden') {
   $('#contribute .message')
     .attr('class', `message ${type}`)
     .text(msg);
+}
+
+function handleContributorDelete(event) {
+  let {
+    id,
+    email
+  } = $(event.target).data();
+
+  $.ajax({
+    url: '/api/user_boards',
+    method: 'DELETE',
+    data: {
+      user_id: id,
+      board_id: board.id
+    }
+  }).then(function () {
+    init();
+    displayMessage(`Successfullly removed user: ${email} from this board.`, 'success');
+    rederContributors();
+    $('ul').hide();
+  });
 }
 
 $contributorModalSaveButton.on('click', handleContributorSave);
