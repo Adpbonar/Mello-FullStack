@@ -1,4 +1,4 @@
-const $logoutButton = $('logout');
+const $logoutButton = $('#logout');
 const $boardContainer = $('.container');
 const $boardName = $('header > h1');
 const $createListInput = $('#create-list input');
@@ -11,6 +11,10 @@ const $editListDeleteButton = $('#edit-list .delete');
 const $editCardInput = $('#edit-card textarea');
 const $editCardSaveButton = $('#edit-card .save');
 const $editCardDeleteButton = $('#edit-card .delete');
+const $contributorModalButton = $('#contributors');
+const $contributorModalInput = $('#contributor-email');
+const $contributorModalSaveButton = $('#contribute .save');
+const $contributorModalList = $('#contributors-content ul');
 
 
 let board;
@@ -45,13 +49,16 @@ function handleLogout() {
   });
 }
 
-function createCards(cards) {
+function createCards(list) {
   let $cardUl = $('<ul>');
-  let $cardLis = cards.map(function (card) {
+  let $cardLis = list.cards.map(function (card) {
     let $cardLi = $('<li>');
     let $cardButton = $('<button>')
       .text(card.text)
-      .data(card)
+      .data({
+        ...card,
+        list_id: list.id
+      })
       .on('click', openCardEditModal);
     $cardLi.append($cardButton);
 
@@ -72,7 +79,7 @@ function createLists(lists) {
       .text(list.title)
       .data(list)
       .on('click', openListEditModal);
-    let $cardUl = createCards(list.cards);
+    let $cardUl = createCards(list);
     let $addCardButton = $('<button>Add a card...</button>').on(
       'click',
       openCardCreateModal
@@ -82,7 +89,6 @@ function createLists(lists) {
     $listContainer.append($header);
     $listContainer.append($cardUl);
     $listContainer.append($addCardButton);
-
     return $listContainer;
   })
 
@@ -90,7 +96,6 @@ function createLists(lists) {
   let $addListButton = $('<button>')
     .text('+ Add another list')
     .on('click', openListCreateModal);
-
   $addListContainer.append($addListButton);
   $listContainers.push($addListContainer);
 
@@ -106,6 +111,21 @@ function renderBoard() {
   $boardContainer.append($lists);
 
   makeSortable();
+  rederContributors();
+}
+
+function rederContributors() {
+  if (board.users.length === 1) {
+    $('h3').html('You don\'t have any contributors yet...');
+  } else {
+    let $contributorListItems = board.users.map(function (user) {
+      let $contributorListItem = $('<li>').text(user.email);
+      return $contributorListItem;
+    });
+
+    $contributorModalList.empty();
+    $contributorModalList.append($contributorListItems);
+  }
 }
 
 function makeSortable() {
@@ -140,7 +160,45 @@ function makeSortable() {
 
     }
   });
+  $('.list > ul').each(function (index, element) {
+    Sortable.create(element, {
+      animation: 1000,
+      ghostClass: 'ghost',
+      filter: '.add',
+      easing: 'cubic-bezier(0.785, 0.135, 0.15, 0.86)',
+      group: 'shared',
+      onEnd: function (event) {
+        let {
+          id,
+          position,
+          list_id
+        } = $(event.item)
+          .find('button')
+          .data();
+        let newPosition = event.newIndex + 1;
+        let newListId = $(event.item)
+          .parents('.list')
+          .data('id')
+
+        if (position === newPosition && list_id === newListId) {
+          return;
+        }
+
+        $.ajax({
+          url: `/api/cards/${id}`,
+          method: 'PUT',
+          data: {
+            list_id: newListId,
+            position: newPosition
+          }
+        }).then(function () {
+          init();
+        });
+      }
+    });
+  });
 }
+
 
 function openListCreateModal() {
   $createListInput.val('');
@@ -296,9 +354,70 @@ function handleCardDelete(event) {
   });
 }
 
+function handleContributorSave(event) {
+  event.preventDefault();
+
+  let emailRegex = /.+@.+\..+/;
+
+  let contributorEmail = $contributorModalInput.val().trim();
+
+  $contributorModalInput.val('');
+
+  if (!emailRegex.test(contributorEmail)) {
+    $('#contribute .message').text(
+      'Must provide a valid email address'
+    ).attr('class', 'message danger');
+    return;
+  }
+
+  let contributor = board.users.find(function (user) {
+    return user.email === contributorEmail;
+  });
+
+  if (contributor) {
+    $('#contribute .message').text(
+      `${contributorEmail} already has access to the board`
+    ).attr('class', 'message danger');
+    return;
+  }
+
+  $.ajax({
+      url: '/api/user_boards',
+      method: 'POST',
+      data: {
+        email: contributorEmail,
+        board_id: board.id
+      }
+    })
+    .then(function () {
+      init();
+      MicroModal.close('contribute');
+    })
+    .catch(function () {
+      $('#contribute .message').text(
+        `Cannot find user with email: ${contributorEmail}`
+      ).attr('class', 'message danger');
+    });
+}
+
+function openContributorModal() {
+  $contributorModalInput.val('');
+  displayMessage('');
+
+  MicroModal.show('contribute')
+}
+
+function displayMessage(msg, type = 'hidden') {
+  $('#contribute .message')
+    .attr('class', `message ${type}`)
+    .text(msg);
+}
+
+$contributorModalSaveButton.on('click', handleContributorSave);
+$contributorModalButton.on('click', openContributorModal);
 $saveListButton.on('click', handdleListCreate);
 $editListDeleteButton.on('click', handleListDelete);
 $saveCardButton.on('click', handleCardCreate);
-$logoutButton.on('click', handleLogout);
 $editCardSaveButton.on('click', handleCardSave);
 $editCardDeleteButton.on('click', handleCardDelete);
+$logoutButton.on('click', handleLogout);
