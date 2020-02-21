@@ -369,9 +369,9 @@ function handleContributorSave(event) {
 
   let emailRegex = /.+@.+\..+/;
 
-  let contributorEmail = $contributorModalInput.val().trim();
+  let contributorEmail = $contributorModalInput.val().trim().toLowerCase();
 
-  $contributorModalInput.val('').toLowerCase();
+  $contributorModalInput.val('')
 
   if (!emailRegex.test(contributorEmail)) {
     $('#contribute .message').text(
