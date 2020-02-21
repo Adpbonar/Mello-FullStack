@@ -75,6 +75,8 @@ function handleLogout() {
   });
 }
 
+
+
 $logoutButton.on('click', handleLogout);
 $newBoardButton.on('click', MicroModal.show.bind(null, 'create-board'));
 $saveBoardButton.on('click', handleBoardCreate);
