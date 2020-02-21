@@ -371,7 +371,7 @@ function handleContributorSave(event) {
 
   let contributorEmail = $contributorModalInput.val().trim().toLowerCase();
 
-  $contributorModalInput.val('')
+  $contributorModalInput.val('');
 
   if (!emailRegex.test(contributorEmail)) {
     $('#contribute .message').text(
