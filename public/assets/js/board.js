@@ -369,19 +369,22 @@ function handleContributorSave(event) {
 
   let emailRegex = /.+@.+\..+/;
 
-  let contributorEmail = $contributorModalInput.val().trim().toLowerCase();
+  let contributorEmail = $contributorModalInput.val().trim();
 
   $contributorModalInput.val('');
 
-  if (!emailRegex.test(contributorEmail)) {
+
+  if (!emailRegex.test(contributorEmail.toLowerCase())) {
     $('#contribute .message').text(
       'Must provide a valid email address'
     ).attr('class', 'message danger');
     return;
   }
 
+  let userEmail = contributorEmail.toLowerCase();
+
   let contributor = board.users.find(function (user) {
-    return user.email === contributorEmail;
+    return user.email === userEmail;
   });
 
   if (contributor) {
@@ -395,7 +398,7 @@ function handleContributorSave(event) {
       url: '/api/user_boards',
       method: 'POST',
       data: {
-        email: contributorEmail,
+        email: userEmail,
         board_id: board.id
       }
     })
