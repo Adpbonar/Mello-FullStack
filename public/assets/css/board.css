@@ -73,6 +73,8 @@ header {
 .container > * {
   flex: 0 0 auto;
   margin-left: 10px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch; 
 }
 
 .list {
@@ -85,8 +87,6 @@ header {
   color: #333;
   padding: 0 10px;
   position: relative;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch; 
 }
 
 .list.add > button {
