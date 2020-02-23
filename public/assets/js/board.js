@@ -56,6 +56,7 @@ function createCards(list) {
   let $cardUl = $('<ul>');
   let $cardLis = list.cards.map(function (card) {
     let $cardLi = $('<li>');
+    let $handle = $('<div class="handle">...</div>')
     let $cardButton = $('<button>')
       .text(card.text)
       .data({
@@ -64,6 +65,7 @@ function createCards(list) {
       })
       .on('click', openCardEditModal);
     $cardLi.append($cardButton);
+    $cardLi.append($handle)
 
     return $cardLi;
   });
@@ -177,6 +179,7 @@ function makeSortable() {
     Sortable.create(element, {
       animation: 1000,
       ghostClass: 'ghost',
+      handle: '.handle',
       filter: '.add',
       easing: 'cubic-bezier(0.785, 0.135, 0.15, 0.86)',
       group: 'shared',
