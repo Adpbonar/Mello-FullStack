@@ -67,7 +67,6 @@ header {
 .handle {
   display:inline;
   float: right;
-  margin-top: -10px;
   color: grey;
   font-size: 25px;
 }
