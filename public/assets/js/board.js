@@ -78,7 +78,8 @@ function createLists(lists) {
   let $listContainers = lists.map(function (list) {
     let $listContainer = $('<div class="list">').data(list);
     let $header = $('<header>');
-    let $headerButton = $('<button>')
+    let $handle = $('<div class="handle">...</div>')
+    let $headerButton = $('<button class="list-header">') 
       .text(list.title)
       .data(list)
       .on('click', openListEditModal);
@@ -89,6 +90,7 @@ function createLists(lists) {
     );
 
     $header.append($headerButton);
+    $headerButton.append($handle)
     $listContainer.append($header);
     $listContainer.append($cardUl);
     $listContainer.append($addCardButton);
@@ -142,6 +144,7 @@ function makeSortable() {
   Sortable.create($boardContainer[0], {
     animation: 1000,
     ghostClass: 'ghost',
+    handle: '.handle',
     filter: '.add',
     easing: 'cubic-bezier(0.785, 0.135, 0.15, 0.86)',
     onMove: function (event) {
